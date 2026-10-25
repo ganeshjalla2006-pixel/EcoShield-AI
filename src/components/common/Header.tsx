@@ -35,6 +35,7 @@ interface HeaderProps {
   onSearchQuery?: (query: string) => void;
   onNavigateToAdminProfile?: () => void;
   onNavigateToLogin?: () => void;
+  onNavigateToLanding?: () => void;
   onSignOut?: () => void;
 }
 
@@ -54,6 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSearchQuery,
   onNavigateToAdminProfile,
   onNavigateToLogin,
+  onNavigateToLanding,
   onSignOut,
 }) => {
   const [showRoleMenu, setShowRoleMenu] = useState(false);
@@ -139,6 +141,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right: Backend Foundation, Role Selector, Notifications & User Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* 3D Landing Page Shortcut */}
+        {onNavigateToLanding && (
+          <button
+            onClick={onNavigateToLanding}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-emerald-950/60 to-cyan-950/60 hover:from-emerald-900/60 hover:to-cyan-900/60 text-slate-200 rounded-xl text-xs font-semibold border border-emerald-500/30 transition-all shadow-xs"
+            title="Return to 3D Landing Page"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <span className="hidden sm:inline">3D Landing</span>
+          </button>
+        )}
+
         {/* Backend Foundation Status Badge */}
         <button
           onClick={() => setShowBackendModal(true)}

@@ -43,7 +43,7 @@ export const App: React.FC = () => {
   } = useAuth();
 
   // App mode: Landing Page vs Platform Application vs Authentication Page
-  const [inApp, setInApp] = useState<boolean>(true);
+  const [inApp, setInApp] = useState<boolean>(false);
   const [showLoginPage, setShowLoginPage] = useState<boolean>(false);
   const [currentView, setCurrentView] = useState<NavView>('overview');
   const [activeCategoryDomain, setActiveCategoryDomain] = useState<PollutionCategory | null>(null);
@@ -260,7 +260,7 @@ export const App: React.FC = () => {
           setCurrentView('overview');
         }}
         onEnterDemo={() => {
-          enterDemoMode('admin');
+          enterDemoMode('citizen');
           setShowLoginPage(false);
           setInApp(true);
           setCurrentView('overview');
@@ -285,6 +285,22 @@ export const App: React.FC = () => {
           setActiveCategoryDomain(cat);
           setModalCategory(cat);
         }}
+        onNavigateToMap={() => {
+          setInApp(true);
+          setCurrentView('live_map');
+        }}
+        onNavigateToReports={() => {
+          setInApp(true);
+          setCurrentView('citizen_portal');
+        }}
+        onNavigateToTasks={() => {
+          setInApp(true);
+          setCurrentView('prevention_tasks');
+        }}
+        reports={reports}
+        tasks={tasks}
+        hotspots={hotspots}
+        notifications={notifications}
       />
     );
   }
@@ -326,6 +342,7 @@ export const App: React.FC = () => {
           onSearchQuery={(q) => setSearchFilter(q)}
           onNavigateToAdminProfile={() => setCurrentView('admin_profile')}
           onNavigateToLogin={() => setShowLoginPage(true)}
+          onNavigateToLanding={() => setInApp(false)}
           onSignOut={() => {
             signOutCloud();
             setCurrentView('overview');

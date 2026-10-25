@@ -56,7 +56,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'prevention_tasks' as NavView, label: 'Prevention Tasks', icon: ShieldAlert, badge: 'Core' },
     { id: 'citizen_portal' as NavView, label: 'Citizen Portal', icon: Users, badge: 'EcoPoints' },
     { id: 'analytics' as NavView, label: 'Analytics', icon: BarChart3 },
-    { id: 'admin_profile' as NavView, label: 'Admin Profile', icon: UserCheck, badge: 'RBAC' },
+    ...(userRole === 'admin'
+      ? [{ id: 'admin_profile' as NavView, label: 'Admin Console', icon: UserCheck, badge: 'RBAC' }]
+      : []),
     { id: 'settings' as NavView, label: 'Settings', icon: Settings },
   ];
 
