@@ -228,29 +228,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
          ========================================================================= */}
       <section className="relative min-h-[92vh] flex items-center justify-center px-4 sm:px-8 lg:px-12 py-16 overflow-hidden border-b border-emerald-950/70">
         {/* Interactive 3D WebGL Canvas Globe Background */}
-        <EcoGlobe3D interactive={true} className="absolute inset-0 w-full h-full z-0 opacity-85" />
+        <EcoGlobe3D interactive={true} className="absolute inset-0 w-full h-full z-0 opacity-90" />
+
+        {/* Ethereal Aurora Glowing Underglow Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-[28rem] h-[28rem] bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-[28rem] h-[28rem] bg-cyan-500/15 rounded-full blur-[100px] pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-teal-400/10 rounded-full blur-[90px] pointer-events-none" />
 
         {/* Atmospheric Glow Filters */}
-        <div className="absolute inset-0 bg-radial-vignette pointer-events-none z-1 bg-[radial-gradient(ellipse_at_center,rgba(5,24,14,0.1)_0%,rgba(4,9,6,0.85)_75%,rgba(4,9,6,0.98)_100%)]" />
+        <div className="absolute inset-0 bg-radial-vignette pointer-events-none z-1 bg-[radial-gradient(ellipse_at_center,rgba(5,24,14,0.05)_0%,rgba(4,9,6,0.85)_75%,rgba(4,9,6,0.98)_100%)]" />
 
         {/* Hero Content */}
         <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6 pt-4">
           {/* Futuristic Live Telemetry Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#08180e]/80 border border-emerald-500/40 text-emerald-300 text-xs font-semibold backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#051a0f]/80 border border-emerald-400/40 text-emerald-300 text-xs font-semibold backdrop-blur-2xl shadow-[0_0_25px_rgba(16,185,129,0.25)]">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span>Live 3D Geospatial Intelligence &bull; Open-Meteo Satellite Feed Active</span>
+            <span>Live 3D Geospatial Intelligence &bull; Orbiting Planto Sensor Mesh Active</span>
           </div>
 
           {/* MAIN TITLE (with rich 3D glowing typography) */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] text-white">
-            <span className="block drop-shadow-[0_4px_25px_rgba(0,0,0,0.8)]">EcoShield AI</span>
-            <span className="block text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-2 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-200 to-cyan-400 drop-shadow-[0_0_35px_rgba(16,185,129,0.4)]">
+            <span className="block drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">EcoShield AI</span>
+            <span className="block text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-2 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-200 to-cyan-300 drop-shadow-[0_0_40px_rgba(16,185,129,0.5)]">
               Predict Pollution. Prevent Before It Happens.
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed drop-shadow">
+          <p className="text-sm sm:text-base lg:text-lg text-slate-200/90 max-w-3xl mx-auto leading-relaxed drop-shadow">
             Autonomous 3D environmental risk intelligence platform synthesizing authentic satellite
             meteorology, open atmospheric telemetry, and geotagged civic observations to trigger proactive
             prevention before disasters strike communities.
@@ -260,7 +265,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="flex flex-wrap justify-center items-center gap-4 pt-4">
             <button
               onClick={onEnterPlatform}
-              className="flex items-center gap-2.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-sm font-bold px-8 py-4 rounded-2xl shadow-[0_10px_35px_rgba(16,185,129,0.4)] hover:shadow-[0_15px_45px_rgba(16,185,129,0.6)] transition-all hover:-translate-y-1 group"
+              className="flex items-center gap-2.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-sm font-bold px-8 py-4 rounded-2xl shadow-[0_10px_35px_rgba(16,185,129,0.45)] hover:shadow-[0_15px_45px_rgba(16,185,129,0.65)] transition-all hover:-translate-y-1 group"
             >
               <span>Explore 3D Command Center</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -271,7 +276,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 const element = document.getElementById('live-console-section');
                 element?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="flex items-center gap-2.5 bg-[#091810]/80 hover:bg-[#0d2217] text-white text-sm font-semibold px-7 py-4 rounded-2xl border border-emerald-500/30 hover:border-emerald-400/60 backdrop-blur-md transition-all shadow-lg hover:-translate-y-1"
+              className="flex items-center gap-2.5 bg-[#06180e]/80 hover:bg-[#0a2717] text-white text-sm font-semibold px-7 py-4 rounded-2xl border border-emerald-500/30 hover:border-emerald-400/60 backdrop-blur-2xl transition-all shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:-translate-y-1"
             >
               <MapPin className="w-4 h-4 text-emerald-400" />
               <span>Live Google Maps & Telemetry</span>
@@ -279,30 +284,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <button
               onClick={onOpenReportModal}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-emerald-300 text-sm font-semibold px-6 py-4 rounded-2xl border border-white/10 hover:border-emerald-400/40 backdrop-blur-md transition-all"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-emerald-300 text-sm font-semibold px-6 py-4 rounded-2xl border border-white/10 hover:border-emerald-400/40 backdrop-blur-2xl transition-all shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]"
             >
               <AlertTriangle className="w-4 h-4 text-emerald-400" />
               <span>Submit Report (+10 EcoPoints)</span>
             </button>
           </div>
 
-          {/* 4 Interactive 3D Stat Counters */}
+          {/* 4 Interactive 3D Stat Counters (Ultra-Glassy Frosted Design) */}
           <div className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
-            <div className="p-3.5 rounded-2xl bg-[#07130b]/80 border border-emerald-950/80 backdrop-blur-md hover:border-emerald-500/40 transition-colors shadow-lg">
+            <div className="relative overflow-hidden p-4 rounded-2xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-emerald-400/60 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.25)] hover:-translate-y-1 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/60 before:to-transparent">
               <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">9 Domains</div>
-              <div className="text-[11px] text-slate-400 mt-0.5">Air, Water, Plastic & Soil</div>
+              <div className="text-[11px] text-slate-300/80 mt-0.5">Air, Water, Plastic & Soil</div>
             </div>
-            <div className="p-3.5 rounded-2xl bg-[#07130b]/80 border border-emerald-950/80 backdrop-blur-md hover:border-emerald-500/40 transition-colors shadow-lg">
+            <div className="relative overflow-hidden p-4 rounded-2xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-cyan-400/60 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(6,182,212,0.25)] hover:-translate-y-1 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/60 before:to-transparent">
               <div className="text-xl sm:text-2xl font-black text-cyan-400 font-mono">₹0 / Free</div>
-              <div className="text-[11px] text-slate-400 mt-0.5">Zero Paid API Costs</div>
+              <div className="text-[11px] text-slate-300/80 mt-0.5">Zero Paid API Costs</div>
             </div>
-            <div className="p-3.5 rounded-2xl bg-[#07130b]/80 border border-emerald-950/80 backdrop-blur-md hover:border-emerald-500/40 transition-colors shadow-lg">
+            <div className="relative overflow-hidden p-4 rounded-2xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-emerald-400/60 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.25)] hover:-translate-y-1 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/60 before:to-transparent">
               <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">15 Min</div>
-              <div className="text-[11px] text-slate-400 mt-0.5">Live Weather Telemetry</div>
+              <div className="text-[11px] text-slate-300/80 mt-0.5">Live Weather Telemetry</div>
             </div>
-            <div className="p-3.5 rounded-2xl bg-[#07130b]/80 border border-emerald-950/80 backdrop-blur-md hover:border-emerald-500/40 transition-colors shadow-lg">
+            <div className="relative overflow-hidden p-4 rounded-2xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-teal-400/60 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(45,212,191,0.25)] hover:-translate-y-1 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-teal-400/60 before:to-transparent">
               <div className="text-xl sm:text-2xl font-black text-teal-300 font-mono">100% Verifiable</div>
-              <div className="text-[11px] text-slate-400 mt-0.5">Audited PostgREST RLS</div>
+              <div className="text-[11px] text-slate-300/80 mt-0.5">Audited PostgREST RLS</div>
             </div>
           </div>
         </div>
@@ -393,7 +398,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             TAB 1: LIVE 3D MAP & GOOGLE MAPS REPORT INTEGRATION
            --------------------------------------------------------------------- */}
         {activeConsoleTab === 'map' && (
-          <div className="bg-[#06100a] rounded-3xl border border-emerald-900/50 p-4 sm:p-6 shadow-2xl space-y-4 animate-in fade-in-50 duration-300">
+          <div className="relative overflow-hidden bg-[#05130b]/75 backdrop-blur-2xl rounded-3xl border border-emerald-500/25 p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.55)] space-y-4 animate-in fade-in-50 duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/50 before:to-transparent">
             {/* Top Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-emerald-950/60">
               <div className="flex items-center gap-3">
@@ -483,7 +488,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             TAB 2: LIVE WEATHER & 7-DAY METEOROLOGICAL FORECAST
            --------------------------------------------------------------------- */}
         {activeConsoleTab === 'weather' && (
-          <div className="bg-[#06100a] rounded-3xl border border-emerald-900/50 p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in-50 duration-300">
+          <div className="relative overflow-hidden bg-[#05130b]/75 backdrop-blur-2xl rounded-3xl border border-emerald-500/25 p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.55)] space-y-6 animate-in fade-in-50 duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/50 before:to-transparent">
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-950/60">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
@@ -606,7 +611,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             TAB 3: LIVE POLLUTION METRICS & 9-DOMAIN SURVEILLANCE
            --------------------------------------------------------------------- */}
         {activeConsoleTab === 'pollution' && (
-          <div className="bg-[#06100a] rounded-3xl border border-emerald-900/50 p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in-50 duration-300">
+          <div className="relative overflow-hidden bg-[#05130b]/75 backdrop-blur-2xl rounded-3xl border border-emerald-500/25 p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.55)] space-y-6 animate-in fade-in-50 duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/50 before:to-transparent">
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-emerald-950/60">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
@@ -661,7 +666,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             TAB 4: RECENT COMMUNITY REPORTS FEED
            --------------------------------------------------------------------- */}
         {activeConsoleTab === 'reports' && (
-          <div className="bg-[#06100a] rounded-3xl border border-emerald-900/50 p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in-50 duration-300">
+          <div className="relative overflow-hidden bg-[#05130b]/75 backdrop-blur-2xl rounded-3xl border border-emerald-500/25 p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.55)] space-y-6 animate-in fade-in-50 duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/50 before:to-transparent">
             <div className="flex items-center justify-between pb-4 border-b border-emerald-950/60">
               <div>
                 <h3 className="font-bold text-white text-base">Live Citizen Incident Stream</h3>
@@ -736,7 +741,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             TAB 5: LIVE URGENT NOTIFICATIONS & ADVISORIES
            --------------------------------------------------------------------- */}
         {activeConsoleTab === 'alerts' && (
-          <div className="bg-[#06100a] rounded-3xl border border-emerald-900/50 p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in-50 duration-300">
+          <div className="relative overflow-hidden bg-[#05130b]/75 backdrop-blur-2xl rounded-3xl border border-emerald-500/25 p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.55)] space-y-6 animate-in fade-in-50 duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-amber-400/50 before:to-transparent">
             <div className="flex items-center justify-between pb-4 border-b border-emerald-950/60">
               <div>
                 <h3 className="font-bold text-white text-base flex items-center gap-2">
@@ -794,34 +799,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-3xl bg-[#06120b] border border-emerald-950/80 hover:border-emerald-500/40 transition-all hover:-translate-y-1 shadow-xl space-y-4">
+          <div className="relative overflow-hidden p-6 rounded-3xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-emerald-400/60 transition-all duration-300 hover:-translate-y-1.5 shadow-[0_10px_35px_rgba(0,0,0,0.4)] hover:shadow-[0_15px_45px_rgba(16,185,129,0.2)] space-y-4 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-400/50 before:to-transparent">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <Brain className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-white">Weather-Pollution Synergy AI</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-300/80 leading-relaxed">
               Combines rain forecasts with drainage choke reports to calculate true flood risks before storm
               surge inundates municipal culverts.
             </p>
           </div>
 
-          <div className="p-6 rounded-3xl bg-[#06120b] border border-emerald-950/80 hover:border-emerald-500/40 transition-all hover:-translate-y-1 shadow-xl space-y-4">
+          <div className="relative overflow-hidden p-6 rounded-3xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-teal-400/60 transition-all duration-300 hover:-translate-y-1.5 shadow-[0_10px_35px_rgba(0,0,0,0.4)] hover:shadow-[0_15px_45px_rgba(45,212,191,0.2)] space-y-4 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-teal-400/50 before:to-transparent">
             <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
               <ShieldAlert className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-white">Proactive Field Intervention</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-300/80 leading-relaxed">
               Dispatches field crews with explicit photographic mitigation directives, requiring before-and-after
               evidence before admin verification sign-off.
             </p>
           </div>
 
-          <div className="p-6 rounded-3xl bg-[#06120b] border border-emerald-950/80 hover:border-emerald-500/40 transition-all hover:-translate-y-1 shadow-xl space-y-4">
+          <div className="relative overflow-hidden p-6 rounded-3xl bg-[#06140c]/70 border border-emerald-500/25 backdrop-blur-2xl hover:border-cyan-400/60 transition-all duration-300 hover:-translate-y-1.5 shadow-[0_10px_35px_rgba(0,0,0,0.4)] hover:shadow-[0_15px_45px_rgba(6,182,212,0.2)] space-y-4 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/50 before:to-transparent">
             <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
               <Users className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-white">Civic Gamification & EcoPoints</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-300/80 leading-relaxed">
               Incentivizes citizens with +10 EcoPoints on incident submission and +15 bonus on verified
               containment, protected by anti-gaming database triggers.
             </p>
