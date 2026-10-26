@@ -369,14 +369,14 @@ LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS 
+AS $$
 DECLARE
   v_role text;
 BEGIN
   SELECT role INTO v_role FROM public.profiles WHERE id = auth.uid();
   RETURN v_role;
 END;
-;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean
@@ -384,14 +384,14 @@ LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS 
+AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid() AND role = 'admin' AND is_deactivated = false
   );
 END;
-;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_field_worker()
 RETURNS boolean
@@ -399,14 +399,14 @@ LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS 
+AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid() AND role = 'field_worker' AND is_deactivated = false
   );
 END;
-;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_field_worker_or_admin()
 RETURNS boolean
@@ -414,14 +414,14 @@ LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS 
+AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid() AND role IN ('field_worker', 'admin') AND is_deactivated = false
   );
 END;
-;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_account_active()
 RETURNS boolean
@@ -429,14 +429,14 @@ LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS 
+AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid() AND is_deactivated = false
   );
 END;
-;
+$$;
 
 CREATE OR REPLACE FUNCTION public.is_trusted_db_admin()
 RETURNS boolean
@@ -444,7 +444,7 @@ LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
-AS 
+AS $$
 BEGIN
   RETURN (
     session_user IN ('postgres', 'supabase_admin')
@@ -454,7 +454,7 @@ BEGIN
     AND COALESCE(current_setting('request.jwt.claim.role', true), '') NOT IN ('anon', 'authenticated')
   );
 END;
-;
+$$;
 
 -- Helper function execution grants
 REVOKE EXECUTE ON FUNCTION public.get_my_role() FROM PUBLIC;
