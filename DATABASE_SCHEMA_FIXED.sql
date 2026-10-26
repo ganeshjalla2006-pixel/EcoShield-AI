@@ -80,104 +80,7 @@ END;
 $$;
 
 -- =============================================================================
--- SECTION 2: SECURITY DEFINER HELPER FUNCTIONS
--- =============================================================================
-
-CREATE OR REPLACE FUNCTION public.get_my_role()
-RETURNS text
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT role FROM public.profiles WHERE id = auth.uid();
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'admin' AND is_deactivated = false
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_field_worker()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'field_worker' AND is_deactivated = false
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_field_worker_or_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role IN ('field_worker', 'admin') AND is_deactivated = false
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_account_active()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND is_deactivated = false
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_trusted_db_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_temp
-AS $$
-  SELECT (
-    session_user IN ('postgres', 'supabase_admin')
-    OR COALESCE(auth.jwt()->>'role', '') = 'service_role'
-  ) AND (
-    COALESCE(auth.role(), '') NOT IN ('anon', 'authenticated')
-    AND COALESCE(current_setting('request.jwt.claim.role', true), '') NOT IN ('anon', 'authenticated')
-  );
-$$;
-
--- Helper function execution grants
-REVOKE EXECUTE ON FUNCTION public.get_my_role() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.is_admin() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.is_field_worker() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.is_field_worker_or_admin() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.is_account_active() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.is_trusted_db_admin() FROM PUBLIC;
-
-GRANT EXECUTE ON FUNCTION public.get_my_role() TO authenticated, anon, service_role;
-GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, anon, service_role;
-GRANT EXECUTE ON FUNCTION public.is_field_worker() TO authenticated, anon, service_role;
-GRANT EXECUTE ON FUNCTION public.is_field_worker_or_admin() TO authenticated, anon, service_role;
-GRANT EXECUTE ON FUNCTION public.is_account_active() TO authenticated, anon, service_role;
-GRANT EXECUTE ON FUNCTION public.is_trusted_db_admin() TO postgres, service_role;
-
--- =============================================================================
--- SECTION 3: TABLE DEFINITIONS, UPGRADES & DATA SANITIZATION
+-- SECTION 2: TABLE DEFINITIONS, UPGRADES & DATA SANITIZATION
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
@@ -438,7 +341,7 @@ UPDATE public.environmental_hotspots SET recommended_actions = '{}' WHERE recomm
 UPDATE public.environmental_hotspots SET last_inspected_at = now() WHERE last_inspected_at IS NULL;
 
 -- =============================================================================
--- SECTION 4: PERFORMANCE INDEXES
+-- SECTION 3: PERFORMANCE INDEXES
 -- =============================================================================
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
 CREATE INDEX IF NOT EXISTS idx_reports_category ON public.pollution_reports(category);
@@ -455,6 +358,118 @@ CREATE INDEX IF NOT EXISTS idx_audit_task_id ON public.task_audit_logs(task_id);
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON public.task_audit_logs(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_hotspots_category ON public.environmental_hotspots(category);
 CREATE INDEX IF NOT EXISTS idx_hotspots_status ON public.environmental_hotspots(status);
+
+-- =============================================================================
+-- SECTION 4: SECURITY DEFINER HELPER FUNCTIONS
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS text
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS 
+DECLARE
+  v_role text;
+BEGIN
+  SELECT role INTO v_role FROM public.profiles WHERE id = auth.uid();
+  RETURN v_role;
+END;
+;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS 
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin' AND is_deactivated = false
+  );
+END;
+;
+
+CREATE OR REPLACE FUNCTION public.is_field_worker()
+RETURNS boolean
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS 
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'field_worker' AND is_deactivated = false
+  );
+END;
+;
+
+CREATE OR REPLACE FUNCTION public.is_field_worker_or_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS 
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role IN ('field_worker', 'admin') AND is_deactivated = false
+  );
+END;
+;
+
+CREATE OR REPLACE FUNCTION public.is_account_active()
+RETURNS boolean
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS 
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND is_deactivated = false
+  );
+END;
+;
+
+CREATE OR REPLACE FUNCTION public.is_trusted_db_admin()
+RETURNS boolean
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS 
+BEGIN
+  RETURN (
+    session_user IN ('postgres', 'supabase_admin')
+    OR COALESCE(auth.jwt()->>'role', '') = 'service_role'
+  ) AND (
+    COALESCE(auth.role(), '') NOT IN ('anon', 'authenticated')
+    AND COALESCE(current_setting('request.jwt.claim.role', true), '') NOT IN ('anon', 'authenticated')
+  );
+END;
+;
+
+-- Helper function execution grants
+REVOKE EXECUTE ON FUNCTION public.get_my_role() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_admin() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_field_worker() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_field_worker_or_admin() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_account_active() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_trusted_db_admin() FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.get_my_role() TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.is_field_worker() TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.is_field_worker_or_admin() TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.is_account_active() TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.is_trusted_db_admin() TO postgres, service_role;
 
 -- =============================================================================
 -- SECTION 5: PRIVACY-PRESERVING SAFE VIEWS (LEAST PRIVILEGE)
