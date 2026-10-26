@@ -669,6 +669,196 @@ class SupabaseDataService {
       };
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // 2.5 REAL-TIME WEBSOCKET SUBSCRIPTIONS (POSTGRES_CHANGES)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Subscribes to real-time changes on the `pollution_reports` table.
+   * Dispatches mapped PollutionReport entities on INSERT, UPDATE, or DELETE events.
+   * Returns an unsubscribe cleanup callback.
+   */
+  public subscribeToReports(
+    onChange: (event: {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new?: PollutionReport;
+      old?: { id: string };
+    }) => void
+  ): () => void {
+    if (!this.isConnected() || !supabase) {
+      return () => {};
+    }
+
+    try {
+      const channelName = `realtime:pollution_reports:${Date.now()}`;
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'pollution_reports' },
+          (payload: any) => {
+            const eventType = payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE';
+            const mappedNew =
+              payload.new && Object.keys(payload.new).length > 0
+                ? mapDbToPollutionReport(payload.new)
+                : undefined;
+            const mappedOld =
+              payload.old && (payload.old as any).id
+                ? { id: (payload.old as any).id }
+                : undefined;
+
+            onChange({
+              eventType,
+              new: mappedNew,
+              old: mappedOld,
+            });
+          }
+        )
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('Realtime WebSocket subscribed: pollution_reports');
+          }
+        });
+
+      return () => {
+        try {
+          if (supabase) {
+            supabase.removeChannel(channel);
+          }
+        } catch (e) {
+          console.warn('Error unsubscribing reports channel:', e);
+        }
+      };
+    } catch (err: any) {
+      console.warn('Failed to setup reports realtime channel:', err?.message);
+      return () => {};
+    }
+  }
+
+  /**
+   * Subscribes to real-time changes on the `prevention_tasks` table.
+   * Dispatches mapped PreventionTask entities on INSERT, UPDATE, or DELETE events.
+   * Returns an unsubscribe cleanup callback.
+   */
+  public subscribeToTasks(
+    onChange: (event: {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new?: PreventionTask;
+      old?: { id: string };
+    }) => void
+  ): () => void {
+    if (!this.isConnected() || !supabase) {
+      return () => {};
+    }
+
+    try {
+      const channelName = `realtime:prevention_tasks:${Date.now()}`;
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'prevention_tasks' },
+          (payload: any) => {
+            const eventType = payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE';
+            const mappedNew =
+              payload.new && Object.keys(payload.new).length > 0
+                ? mapDbToPreventionTask(payload.new)
+                : undefined;
+            const mappedOld =
+              payload.old && (payload.old as any).id
+                ? { id: (payload.old as any).id }
+                : undefined;
+
+            onChange({
+              eventType,
+              new: mappedNew,
+              old: mappedOld,
+            });
+          }
+        )
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('Realtime WebSocket subscribed: prevention_tasks');
+          }
+        });
+
+      return () => {
+        try {
+          if (supabase) {
+            supabase.removeChannel(channel);
+          }
+        } catch (e) {
+          console.warn('Error unsubscribing tasks channel:', e);
+        }
+      };
+    } catch (err: any) {
+      console.warn('Failed to setup tasks realtime channel:', err?.message);
+      return () => {};
+    }
+  }
+
+  /**
+   * Subscribes to real-time changes on the `environmental_hotspots` table.
+   * Dispatches mapped EnvironmentalHotspot entities on INSERT, UPDATE, or DELETE events.
+   * Returns an unsubscribe cleanup callback.
+   */
+  public subscribeToHotspots(
+    onChange: (event: {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new?: EnvironmentalHotspot;
+      old?: { id: string };
+    }) => void
+  ): () => void {
+    if (!this.isConnected() || !supabase) {
+      return () => {};
+    }
+
+    try {
+      const channelName = `realtime:environmental_hotspots:${Date.now()}`;
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'environmental_hotspots' },
+          (payload: any) => {
+            const eventType = payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE';
+            const mappedNew =
+              payload.new && Object.keys(payload.new).length > 0
+                ? mapDbToEnvironmentalHotspot(payload.new)
+                : undefined;
+            const mappedOld =
+              payload.old && (payload.old as any).id
+                ? { id: (payload.old as any).id }
+                : undefined;
+
+            onChange({
+              eventType,
+              new: mappedNew,
+              old: mappedOld,
+            });
+          }
+        )
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('Realtime WebSocket subscribed: environmental_hotspots');
+          }
+        });
+
+      return () => {
+        try {
+          if (supabase) {
+            supabase.removeChannel(channel);
+          }
+        } catch (e) {
+          console.warn('Error unsubscribing hotspots channel:', e);
+        }
+      };
+    } catch (err: any) {
+      console.warn('Failed to setup hotspots realtime channel:', err?.message);
+      return () => {};
+    }
+  }
 }
 
 export const supabaseDataService = new SupabaseDataService();

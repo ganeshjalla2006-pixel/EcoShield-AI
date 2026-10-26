@@ -85,9 +85,13 @@ export const App: React.FC = () => {
     setNotifications(storageService.getNotifications());
   };
 
-  // Synchronize with Supabase Cloud PostgreSQL when connected
+  // Synchronize with Supabase Cloud PostgreSQL and Realtime WebSockets when connected
   useEffect(() => {
     let isMounted = true;
+    let unsubReports: (() => void) | undefined;
+    let unsubTasks: (() => void) | undefined;
+    let unsubHotspots: (() => void) | undefined;
+
     const syncCloudData = async () => {
       if (supabaseDataService.isConnected()) {
         try {
@@ -110,12 +114,64 @@ export const App: React.FC = () => {
         } catch (err) {
           console.warn('Supabase initial data sync error:', err);
         }
+
+        // Initialize Realtime WebSocket subscriptions with state deduplication
+        unsubReports = supabaseDataService.subscribeToReports((event) => {
+          if (!isMounted) return;
+          if (event.eventType === 'INSERT' && event.new) {
+            setReports((prev) => {
+              const exists = prev.some((r) => r.id === event.new!.id);
+              return exists ? prev : [event.new!, ...prev];
+            });
+          } else if (event.eventType === 'UPDATE' && event.new) {
+            setReports((prev) =>
+              prev.map((r) => (r.id === event.new!.id ? event.new! : r))
+            );
+          } else if (event.eventType === 'DELETE' && event.old?.id) {
+            setReports((prev) => prev.filter((r) => r.id !== event.old!.id));
+          }
+        });
+
+        unsubTasks = supabaseDataService.subscribeToTasks((event) => {
+          if (!isMounted) return;
+          if (event.eventType === 'INSERT' && event.new) {
+            setTasks((prev) => {
+              const exists = prev.some((t) => t.id === event.new!.id);
+              return exists ? prev : [event.new!, ...prev];
+            });
+          } else if (event.eventType === 'UPDATE' && event.new) {
+            setTasks((prev) =>
+              prev.map((t) => (t.id === event.new!.id ? event.new! : t))
+            );
+          } else if (event.eventType === 'DELETE' && event.old?.id) {
+            setTasks((prev) => prev.filter((t) => t.id !== event.old!.id));
+          }
+        });
+
+        unsubHotspots = supabaseDataService.subscribeToHotspots((event) => {
+          if (!isMounted) return;
+          if (event.eventType === 'INSERT' && event.new) {
+            setHotspots((prev) => {
+              const exists = prev.some((h) => h.id === event.new!.id);
+              return exists ? prev : [event.new!, ...prev];
+            });
+          } else if (event.eventType === 'UPDATE' && event.new) {
+            setHotspots((prev) =>
+              prev.map((h) => (h.id === event.new!.id ? event.new! : h))
+            );
+          } else if (event.eventType === 'DELETE' && event.old?.id) {
+            setHotspots((prev) => prev.filter((h) => h.id !== event.old!.id));
+          }
+        });
       }
     };
 
     syncCloudData();
     return () => {
       isMounted = false;
+      if (unsubReports) unsubReports();
+      if (unsubTasks) unsubTasks();
+      if (unsubHotspots) unsubHotspots();
     };
   }, [authMode, currentUser.id]);
 

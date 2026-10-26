@@ -67,6 +67,15 @@ export const WeatherStationWidget: React.FC<WeatherStationWidgetProps> = ({
 
   useEffect(() => {
     loadWeather();
+
+    // 15-minute sensible auto-refresh to stay synchronized without exceeding Open-Meteo fair use
+    const intervalId = setInterval(() => {
+      loadWeather(true);
+    }, 15 * 60 * 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [coordinates.lat, coordinates.lng]);
 
   // Loading Skeleton State
@@ -151,6 +160,10 @@ export const WeatherStationWidget: React.FC<WeatherStationWidgetProps> = ({
             <span className="text-slate-300">Timezone: {weather.timezone || 'UTC'}</span>
             <span>&bull;</span>
             <span className="text-emerald-400">{weather.forecastPeriod || '7-Day Horizon'}</span>
+            <span>&bull;</span>
+            <span className="text-slate-400">Fetched: {new Date(weather.fetchedAt).toLocaleTimeString()}</span>
+            <span>&bull;</span>
+            <span className="text-slate-400">Interval: 15m</span>
           </div>
         </div>
 

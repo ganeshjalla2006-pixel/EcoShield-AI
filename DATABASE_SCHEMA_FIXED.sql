@@ -1713,3 +1713,30 @@ BEGIN
   END IF;
 END;
 $$;
+
+-- =============================================================================
+-- SECTION 13: SUPABASE REALTIME PUBLICATION CONFIGURATION
+-- Enables WebSocket Postgres Changes broadcasting for live multi-user sync.
+-- Tables: pollution_reports, prevention_tasks, environmental_hotspots
+-- =============================================================================
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    BEGIN
+      ALTER PUBLICATION supabase_realtime ADD TABLE public.pollution_reports;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+
+    BEGIN
+      ALTER PUBLICATION supabase_realtime ADD TABLE public.prevention_tasks;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+
+    BEGIN
+      ALTER PUBLICATION supabase_realtime ADD TABLE public.environmental_hotspots;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+  END IF;
+END;
+$$;

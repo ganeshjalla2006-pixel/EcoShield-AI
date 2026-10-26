@@ -67,6 +67,15 @@ export const VerifiedPollutionWidget: React.FC<VerifiedPollutionWidgetProps> = (
 
   useEffect(() => {
     loadData();
+
+    // 15-minute auto-refresh interval to maintain telemetry freshness
+    const intervalId = setInterval(() => {
+      loadData(true);
+    }, 15 * 60 * 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [coordinates.lat, coordinates.lng]);
 
   if (loading && !data) {
@@ -113,14 +122,21 @@ export const VerifiedPollutionWidget: React.FC<VerifiedPollutionWidgetProps> = (
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <h3 className="font-bold text-sm tracking-wide text-white">{title}</h3>
-            <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Copernicus CAMS</span>
-            </span>
+            {data.isStale ? (
+              <span className="text-[10px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
+                <span>Cached Telemetry</span>
+              </span>
+            ) : (
+              <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>{data.provider.includes('OpenAQ') ? 'OpenAQ Ground In-Situ' : 'Copernicus CAMS'}</span>
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5 font-mono">
             {coordinates.lat.toFixed(4)}°N, {coordinates.lng.toFixed(4)}°E
             {coordinates.addressName ? ` • ${coordinates.addressName}` : ''}
+            <span className="text-slate-500 ml-2">Fetched: {new Date(data.fetchedAt).toLocaleTimeString()} • Interval: 15m</span>
           </p>
         </div>
 

@@ -33,11 +33,11 @@ export const CATEGORY_DATA_SOURCE_ASSESSMENT: Record<PollutionCategory, Category
     category: 'air',
     categoryName: 'Air Pollution',
     isLiveTelemetryAvailable: true,
-    providerName: 'Copernicus CAMS via Open-Meteo Air Quality API',
-    coverage: 'Global High-Resolution (Atmospheric Chemical Transport Models + Assimilated In-Situ Stations)',
-    telemetryType: 'Real-Time Model Analysis & In-Situ Assimilation',
+    providerName: 'Copernicus CAMS (via Open-Meteo Air Quality) & OpenAQ v3 Ground In-Situ',
+    coverage: 'Global High-Resolution (Atmospheric Chemical Transport Models + In-Situ Ground Monitoring Stations)',
+    telemetryType: 'Real-Time Model Analysis & Calibrated Ground Sensor Assimilation',
     statusMessage: 'Live continuous telemetry available (PM2.5, PM10, NO₂, SO₂, CO, O₃, US/European AQI).',
-    accessPrerequisites: '₹0 Free Tier, CC BY 4.0 Open Data Attribution. No API key required.',
+    accessPrerequisites: '₹0 Free Tier, CC BY 4.0 Open Data Attribution. Optional: VITE_OPENAQ_API_KEY for physical in-situ ground sensors.',
   },
   water: {
     category: 'water',
@@ -158,6 +158,116 @@ export function getAqiBandDetails(band: 'good' | 'moderate' | 'unhealthy_sensiti
  */
 export function clearPollutionCache(): void {
   pollutionCache.clear();
+}
+
+/**
+ * Safely resolves the OpenAQ API key from environment variables across Vite and Node test runners.
+ */
+export function getOpenAqApiKey(): string | undefined {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_OPENAQ_API_KEY) {
+      return String(import.meta.env.VITE_OPENAQ_API_KEY).trim();
+    }
+  } catch {
+    // Vite import.meta boundary
+  }
+  const globalProc = (globalThis as any).process;
+  if (globalProc && globalProc.env && globalProc.env.VITE_OPENAQ_API_KEY) {
+    return String(globalProc.env.VITE_OPENAQ_API_KEY).trim();
+  }
+  return undefined;
+}
+
+/**
+ * Optional OpenAQ v3 In-Situ Ground Station Telemetry Provider.
+ * When `VITE_OPENAQ_API_KEY` is present, EcoShield AI queries the official OpenAQ v3 API
+ * for physical in-situ monitoring stations within 25km radius.
+ * If unconfigured or stations are unavailable, defaults to Copernicus CAMS (Open-Meteo) under CC BY 4.0.
+ */
+export async function tryFetchOpenAQGroundTelemetry(
+  coords: Coordinates,
+  apiKeyOverride?: string
+): Promise<{ success: boolean; stationName?: string; observations?: VerifiedPollutionObservation[] }> {
+  const token = apiKeyOverride || getOpenAqApiKey();
+  if (!token) {
+    return { success: false };
+  }
+
+  try {
+    const url = `https://api.openaq.org/v3/locations?coordinates=${coords.lat},${coords.lng}&radius=25000&limit=3`;
+    const res = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'X-API-Key': token,
+      },
+    });
+
+    if (!res.ok) {
+      return { success: false };
+    }
+
+    const json = await res.json();
+    const results = json?.results;
+    if (Array.isArray(results) && results.length > 0) {
+      const station = results[0];
+      const stationName = station.name || 'OpenAQ Ground In-Situ Station';
+      const stationObs: VerifiedPollutionObservation[] = [];
+
+      if (Array.isArray(station.sensors)) {
+        for (const sensor of station.sensors) {
+          const paramName = sensor?.parameter?.name?.toLowerCase();
+          const value = sensor?.latest?.value;
+          const unit = sensor?.parameter?.units || 'µg/m³';
+          const observedAt = sensor?.latest?.datetime || new Date().toISOString();
+
+          if (typeof value === 'number' && !isNaN(value)) {
+            if (paramName === 'pm25' || paramName === 'pm2.5') {
+              stationObs.push({
+                id: `OBS-OPENAQ-PM25-${coords.lat.toFixed(2)}-${coords.lng.toFixed(2)}`,
+                category: 'air',
+                indicator: 'Particulate Matter (PM2.5)',
+                value: Number(value.toFixed(1)),
+                unit,
+                provider: `OpenAQ In-Situ Ground Station (${stationName})`,
+                coordinates: coords,
+                observedAt,
+                timezone: 'UTC',
+                qualityStatus: 'official_ground_station',
+                attribution: `OpenAQ Global Ground Station In-Situ Telemetry (${stationName})`,
+              });
+            } else if (paramName === 'pm10') {
+              stationObs.push({
+                id: `OBS-OPENAQ-PM10-${coords.lat.toFixed(2)}-${coords.lng.toFixed(2)}`,
+                category: 'air',
+                indicator: 'Coarse Particulate (PM10)',
+                value: Number(value.toFixed(1)),
+                unit,
+                provider: `OpenAQ In-Situ Ground Station (${stationName})`,
+                coordinates: coords,
+                observedAt,
+                timezone: 'UTC',
+                qualityStatus: 'official_ground_station',
+                attribution: `OpenAQ Global Ground Station In-Situ Telemetry (${stationName})`,
+              });
+            }
+          }
+        }
+      }
+
+      if (stationObs.length > 0) {
+        return {
+          success: true,
+          stationName,
+          observations: stationObs,
+        };
+      }
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.warn('OpenAQ ground telemetry lookup note:', err);
+    return { success: false };
+  }
 }
 
 /**
@@ -327,13 +437,25 @@ export async function fetchVerifiedPollutionData(
       });
     }
 
+    // 7. Optional OpenAQ v3 Physical Ground Station Ingestion (when VITE_OPENAQ_API_KEY is configured)
+    let activeProvider = providerName;
+    try {
+      const openAqResult = await tryFetchOpenAQGroundTelemetry(coords);
+      if (openAqResult.success && openAqResult.observations && openAqResult.observations.length > 0) {
+        observations.unshift(...openAqResult.observations);
+        activeProvider = `OpenAQ In-Situ Ground Station (${openAqResult.stationName}) & ${providerName}`;
+      }
+    } catch {
+      // Graceful zero-cost fallback to Copernicus CAMS
+    }
+
     const sourceStatuses = Object.values(CATEGORY_DATA_SOURCE_ASSESSMENT);
 
     const payload: PollutionDataResponse = {
       observations,
       sourceStatuses,
       fetchedAt: new Date().toISOString(),
-      provider: providerName,
+      provider: activeProvider,
       isStale: false,
     };
 
