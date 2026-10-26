@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ShieldCheck,
   Database,
@@ -28,6 +29,17 @@ export const BackendFoundationModal: React.FC<BackendFoundationModalProps> = ({
   const [activeTab, setActiveTab] = useState<'status' | 'schema' | 'migration' | 'security'>('status');
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const status = getBackendStatus();
@@ -38,9 +50,15 @@ export const BackendFoundationModal: React.FC<BackendFoundationModalProps> = ({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in-50 duration-150">
-      <div className="bg-[#0b140f] border border-emerald-950/80 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-slate-200">
+  const modalContent = (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/85 backdrop-blur-sm z-[99999] flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in-50 duration-150"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#0b140f] border border-emerald-950/80 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-slate-200 relative z-10"
+      >
         {/* Header */}
         <div className="bg-[#060e09] border-b border-emerald-950/70 p-4 sm:p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -323,4 +341,8 @@ export const BackendFoundationModal: React.FC<BackendFoundationModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 };
