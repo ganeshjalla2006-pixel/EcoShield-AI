@@ -43,6 +43,7 @@ import {
   Coordinates,
   ReportStatus,
 } from '../../types';
+import { supabaseDataService } from '../../services/supabaseDataService';
 
 interface CommunityCitizenPortalProps {
   currentUser: UserProfile;
@@ -251,16 +252,27 @@ export const CommunityCitizenPortal: React.FC<CommunityCitizenPortalProps> = ({
     );
   };
 
-  // Image File Upload via FileReader to Base64 DataURL
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Image File Upload via Supabase Storage with Local FileReader Fallback
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setSubmitError('Photo size exceeds 2MB limit. Please select a smaller image.');
+    if (file.size > 10 * 1024 * 1024) {
+      setSubmitError('Photo size exceeds 10MB limit. Please select a smaller image.');
       return;
     }
 
+    // Attempt Supabase Storage upload if connected & authenticated
+    if (supabaseDataService.isConnected() && currentUser?.id && currentUser.id.includes('-')) {
+      const uploadRes = await supabaseDataService.uploadEvidenceFile(file, currentUser.id);
+      if (uploadRes.success && uploadRes.url) {
+        setEvidenceImage(uploadRes.url);
+        setSubmitError(null);
+        return;
+      }
+    }
+
+    // Local Base64 preview & fallback
     const reader = new FileReader();
     reader.onload = () => {
       setEvidenceImage(reader.result as string);

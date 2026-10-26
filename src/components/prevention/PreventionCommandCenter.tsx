@@ -45,6 +45,7 @@ import {
   PollutionCategory,
   UserRole,
 } from '../../types';
+import { supabaseDataService } from '../../services/supabaseDataService';
 
 interface PreventionCommandCenterProps {
   reports: PollutionReport[];
@@ -231,14 +232,24 @@ export const PreventionCommandCenter: React.FC<PreventionCommandCenterProps> = (
     );
   }, [reports, tasks]);
 
-  // Handle Image File Upload (converted to Data URL for local display)
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Image File Upload via Supabase Storage with Local FileReader Fallback
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setActionError('File size exceeds 2MB limit. Please choose a smaller photo.');
+    if (file.size > 10 * 1024 * 1024) {
+      setActionError('File size exceeds 10MB limit. Please choose a smaller photo.');
       return;
+    }
+
+    // Attempt Supabase Storage upload if authenticated
+    if (supabaseDataService.isConnected() && currentUser?.id && currentUser.id.includes('-')) {
+      const uploadRes = await supabaseDataService.uploadEvidenceFile(file, currentUser.id);
+      if (uploadRes.success && uploadRes.url) {
+        setAfterEvidenceImage(uploadRes.url);
+        setActionError(null);
+        return;
+      }
     }
 
     const reader = new FileReader();

@@ -21,6 +21,8 @@ import {
   TaskAuditEntry,
 } from '../types';
 import { storageService } from './storageService';
+import { supabaseDataService } from './supabaseDataService';
+import { authService } from './authService';
 
 export interface BackendCredentials {
   supabaseUrl?: string;
@@ -228,7 +230,18 @@ class CloudBackendAdapter implements IBackendService {
     return storageService.getCurrentUser();
   }
 
-  public async signInWithPassword(email: string, _password: string): Promise<AuthSession> {
+  public async signInWithPassword(email: string, password: string): Promise<AuthSession> {
+    if (this.provider === 'supabase') {
+      const result = await authService.signIn(email, password);
+      if (!result.success || !result.user) {
+        throw new Error(result.error || 'Authentication failed.');
+      }
+      return {
+        user: result.user,
+        provider: 'supabase',
+        isDemoSimulation: false,
+      };
+    }
     const user = storageService.getUsers().find((u: UserProfile) => u.email.toLowerCase() === email.toLowerCase()) || storageService.getCurrentUser();
     return {
       user,
@@ -238,23 +251,40 @@ class CloudBackendAdapter implements IBackendService {
   }
 
   public async signOut(): Promise<void> {
+    if (this.provider === 'supabase') {
+      await authService.signOut();
+    }
     const citizen = storageService.getUsers().find((u: UserProfile) => u.role === 'citizen');
     if (citizen) storageService.setCurrentUser(citizen);
   }
 
   public async getReports(): Promise<PollutionReport[]> {
+    if (this.provider === 'supabase') {
+      return supabaseDataService.getReports();
+    }
     return storageService.getReports();
   }
 
   public async createReport(report: Omit<PollutionReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<PollutionReport> {
+    if (this.provider === 'supabase') {
+      const user = storageService.getCurrentUser();
+      return supabaseDataService.createReport(report, user);
+    }
     return storageService.addReport(report);
   }
 
   public async getTasks(): Promise<PreventionTask[]> {
+    if (this.provider === 'supabase') {
+      return supabaseDataService.getTasks();
+    }
     return storageService.getTasks();
   }
 
   public async createTask(task: Omit<PreventionTask, 'id' | 'createdAt' | 'updatedAt' | 'auditTrail'>): Promise<PreventionTask> {
+    if (this.provider === 'supabase') {
+      const user = storageService.getCurrentUser();
+      return supabaseDataService.createTask(task, user);
+    }
     return storageService.addTask(task);
   }
 

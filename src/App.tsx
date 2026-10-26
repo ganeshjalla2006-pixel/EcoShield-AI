@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sidebar,
   NavView,
@@ -19,6 +19,7 @@ import { LoginPage } from './components/auth/LoginPage';
 import { AdminProfileView } from './components/auth/AdminProfileView';
 import { useAuth } from './context/AuthContext';
 import { storageService } from './services/storageService';
+import { supabaseDataService } from './services/supabaseDataService';
 import {
   PollutionReport,
   PreventionTask,
@@ -84,17 +85,69 @@ export const App: React.FC = () => {
     setNotifications(storageService.getNotifications());
   };
 
-  const handleCreateReport = (newRepData: Omit<PollutionReport, 'id' | 'createdAt' | 'updatedAt'>) => {
-    storageService.addReport(newRepData);
+  // Synchronize with Supabase Cloud PostgreSQL when connected
+  useEffect(() => {
+    let isMounted = true;
+    const syncCloudData = async () => {
+      if (supabaseDataService.isConnected()) {
+        try {
+          const [cloudReports, cloudTasks, cloudHotspots] = await Promise.all([
+            supabaseDataService.getReports(),
+            supabaseDataService.getTasks(),
+            supabaseDataService.getHotspots(),
+          ]);
+          if (isMounted) {
+            if (cloudReports && cloudReports.length > 0) {
+              setReports(cloudReports);
+            }
+            if (cloudTasks && cloudTasks.length > 0) {
+              setTasks(cloudTasks);
+            }
+            if (cloudHotspots && cloudHotspots.length > 0) {
+              setHotspots(cloudHotspots);
+            }
+          }
+        } catch (err) {
+          console.warn('Supabase initial data sync error:', err);
+        }
+      }
+    };
+
+    syncCloudData();
+    return () => {
+      isMounted = false;
+    };
+  }, [authMode, currentUser.id]);
+
+  const handleCreateReport = async (newRepData: Omit<PollutionReport, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const localRep = storageService.addReport(newRepData);
     refreshAllData();
+
+    if (supabaseDataService.isConnected()) {
+      try {
+        const cloudRep = await supabaseDataService.createReport(newRepData, currentUser);
+        setReports((prev) => prev.map((r) => (r.id === localRep.id ? cloudRep : r)));
+      } catch (err) {
+        console.warn('Cloud report sync error:', err);
+      }
+    }
   };
 
-  const handleCreateTask = (newTaskData: Omit<PreventionTask, 'id' | 'createdAt' | 'updatedAt' | 'auditTrail'>) => {
-    storageService.addTask(newTaskData);
+  const handleCreateTask = async (newTaskData: Omit<PreventionTask, 'id' | 'createdAt' | 'updatedAt' | 'auditTrail'>) => {
+    const localTask = storageService.addTask(newTaskData);
     refreshAllData();
+
+    if (supabaseDataService.isConnected()) {
+      try {
+        const cloudTask = await supabaseDataService.createTask(newTaskData, currentUser);
+        setTasks((prev) => prev.map((t) => (t.id === localTask.id ? cloudTask : t)));
+      } catch (err) {
+        console.warn('Cloud task sync error:', err);
+      }
+    }
   };
 
-  const handleUpdateTaskStatus = (
+  const handleUpdateTaskStatus = async (
     taskId: string,
     status: PreventionTask['status'],
     notes?: string,
@@ -102,11 +155,19 @@ export const App: React.FC = () => {
   ) => {
     storageService.updateTaskStatus(taskId, status, notes, afterEvidence, currentUser);
     refreshAllData();
+
+    if (supabaseDataService.isConnected()) {
+      await supabaseDataService.updateTaskStatus(taskId, status, notes, afterEvidence, currentUser);
+    }
   };
 
-  const handleReturnTaskForCorrection = (taskId: string, notes: string) => {
+  const handleReturnTaskForCorrection = async (taskId: string, notes: string) => {
     storageService.returnTaskForCorrection(taskId, notes, currentUser);
     refreshAllData();
+
+    if (supabaseDataService.isConnected()) {
+      await supabaseDataService.returnTaskForCorrection(taskId, notes, currentUser);
+    }
   };
 
   const handleAssignTaskWorker = (
@@ -117,18 +178,31 @@ export const App: React.FC = () => {
     refreshAllData();
   };
 
-  const handleUpdateReportStatus = (
+  const handleUpdateReportStatus = async (
     reportId: string,
     status: PollutionReport['status'],
     notes?: string
   ) => {
     storageService.updateReportStatus(reportId, status, currentUser.displayName, notes);
     refreshAllData();
+
+    if (supabaseDataService.isConnected()) {
+      await supabaseDataService.updateReportStatus(reportId, status, currentUser.displayName, notes, currentUser);
+    }
   };
 
-  const handleAddNewHotspot = (hotspotData: Omit<EnvironmentalHotspot, 'id'>) => {
-    storageService.addHotspot(hotspotData);
+  const handleAddNewHotspot = async (hotspotData: Omit<EnvironmentalHotspot, 'id'>) => {
+    const localHotspot = storageService.addHotspot(hotspotData);
     refreshAllData();
+
+    if (supabaseDataService.isConnected()) {
+      try {
+        const cloudHotspot = await supabaseDataService.createHotspot(hotspotData, currentUser);
+        setHotspots((prev) => prev.map((h) => (h.id === localHotspot.id ? cloudHotspot : h)));
+      } catch (err) {
+        console.warn('Cloud hotspot sync error:', err);
+      }
+    }
   };
 
   const handleNotificationClick = (notif: InAppNotification) => {

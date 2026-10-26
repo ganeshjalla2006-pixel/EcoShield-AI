@@ -137,6 +137,7 @@ export interface PreventionTask {
   isDemo?: boolean;
   verifiedBy?: string;
   verifiedAt?: string;
+  verificationRewardGranted?: boolean;
   createdAt: string;
   updatedAt: string;
   auditTrail: TaskAuditEntry[];
