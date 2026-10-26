@@ -244,9 +244,10 @@ class SupabaseDataService {
         .order('created_at', { ascending: false });
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        const mapped = data.map(mapDbToPollutionReport);
-        // Sync into local cache for offline/instant reload
-        return mapped;
+        const cloudReports = data.map(mapDbToPollutionReport);
+        const cloudIds = new Set(cloudReports.map((r) => r.id));
+        const localSeeds = storageService.getReports().filter((r) => !cloudIds.has(r.id));
+        return [...cloudReports, ...localSeeds];
       }
 
       // 2. If table is empty or anon permission blocked, attempt the public privacy view
@@ -258,7 +259,10 @@ class SupabaseDataService {
           .order('created_at', { ascending: false });
 
         if (!viewError && Array.isArray(viewData) && viewData.length > 0) {
-          return viewData.map(mapDbToPollutionReport);
+          const cloudReports = viewData.map(mapDbToPollutionReport);
+          const cloudIds = new Set(cloudReports.map((r) => r.id));
+          const localSeeds = storageService.getReports().filter((r) => !cloudIds.has(r.id));
+          return [...cloudReports, ...localSeeds];
         }
       }
 
@@ -394,7 +398,9 @@ class SupabaseDataService {
         mapDbToPreventionTask(row, auditMap[row.id] || [])
       );
 
-      return mappedTasks;
+      const cloudIds = new Set(mappedTasks.map((t) => t.id));
+      const localSeeds = storageService.getTasks().filter((t) => !cloudIds.has(t.id));
+      return [...mappedTasks, ...localSeeds];
     } catch (err: any) {
       console.warn('Supabase getTasks failed, using local storage cache:', err.message);
       return storageService.getTasks();
@@ -541,7 +547,10 @@ class SupabaseDataService {
         .order('current_risk_score', { ascending: false });
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map(mapDbToEnvironmentalHotspot);
+        const cloudHotspots = data.map(mapDbToEnvironmentalHotspot);
+        const cloudIds = new Set(cloudHotspots.map((h) => h.id));
+        const localSeeds = storageService.getHotspots().filter((h) => !cloudIds.has(h.id));
+        return [...cloudHotspots, ...localSeeds];
       }
 
       // Try public view fallback if anon
@@ -552,7 +561,10 @@ class SupabaseDataService {
           .order('current_risk_score', { ascending: false });
 
         if (!viewError && Array.isArray(viewData) && viewData.length > 0) {
-          return viewData.map(mapDbToEnvironmentalHotspot);
+          const cloudHotspots = viewData.map(mapDbToEnvironmentalHotspot);
+          const cloudIds = new Set(cloudHotspots.map((h) => h.id));
+          const localSeeds = storageService.getHotspots().filter((h) => !cloudIds.has(h.id));
+          return [...cloudHotspots, ...localSeeds];
         }
       }
 

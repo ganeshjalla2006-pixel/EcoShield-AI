@@ -713,15 +713,25 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         {/* Quick City Preset Jump Links */}
         <div className="flex items-center gap-1.5 overflow-x-auto text-[11px]">
           <span className="text-slate-500 font-mono text-[10px] hidden md:inline">Presets:</span>
-          {PRESET_LOCATIONS.map((preset) => (
-            <button
-              key={preset.name}
-              onClick={() => handleSelectPreset(preset)}
-              className="px-2 py-0.5 rounded-lg bg-[#0e1a13] hover:bg-[#13281c] border border-emerald-950/80 text-slate-300 hover:text-emerald-300 text-[10px] font-medium whitespace-nowrap transition-colors"
-            >
-              {preset.name}
-            </button>
-          ))}
+          {PRESET_LOCATIONS.map((preset) => {
+            const isActive =
+              selectedLocation &&
+              Math.abs(selectedLocation.lat - preset.lat) < 0.05 &&
+              Math.abs(selectedLocation.lng - preset.lng) < 0.05;
+            return (
+              <button
+                key={preset.name}
+                onClick={() => handleSelectPreset(preset)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all border ${
+                  isActive
+                    ? 'bg-emerald-600/25 border-emerald-500/70 text-emerald-300 font-semibold shadow-xs'
+                    : 'bg-[#0e1a13] hover:bg-[#13281c] border-emerald-950/80 text-slate-300 hover:text-emerald-300'
+                }`}
+              >
+                {preset.name}
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -34,6 +34,7 @@ interface OverviewDashboardProps {
   onNavigateToView: (view: any) => void;
   onSelectReport: (report: PollutionReport) => void;
   onSelectHotspot: (hotspot: EnvironmentalHotspot) => void;
+  onSelectLocation?: (coords: Coordinates) => void;
   onOpenReportModal?: () => void;
 }
 
@@ -45,6 +46,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   onNavigateToView,
   onSelectReport,
   onSelectHotspot,
+  onSelectLocation,
   onOpenReportModal,
 }) => {
   const criticalReports = reports.filter((r) => r.severity >= 4);
@@ -210,6 +212,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             tasks={tasks}
             hotspots={hotspots}
             selectedLocation={currentLocation}
+            onSelectLocation={onSelectLocation}
             onSelectReport={onSelectReport}
             onSelectHotspot={onSelectHotspot}
             onNavigateToTasks={() => onNavigateToView('prevention_tasks')}

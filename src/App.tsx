@@ -530,6 +530,7 @@ export const App: React.FC = () => {
                 tasks={tasks}
                 hotspots={hotspots}
                 currentLocation={userLocation}
+                onSelectLocation={(coords) => setUserLocation(coords)}
                 onNavigateToView={(view) => setCurrentView(view)}
                 onSelectReport={(rep) => setSelectedReport(rep)}
                 onSelectHotspot={(spot) => setSelectedHotspot(spot)}
